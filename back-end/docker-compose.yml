@@ -15,7 +15,15 @@ services:
 
   app:
     build: .
-    command: sh -c "until pg_isready -h db -p 5432; do echo 'Waiting for database...'; sleep 2; done; npx prisma migrate dev --name init && npm run start:dev"
+    command: >
+      sh -c "
+      until pg_isready -h db -p 5432; do
+        echo 'Waiting for database...';
+        sleep 2;
+      done;
+      npx prisma migrate dev --name init &&
+      npm run start:dev
+      "
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
