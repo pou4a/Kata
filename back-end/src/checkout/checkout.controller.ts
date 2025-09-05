@@ -1,13 +1,16 @@
-import { Controller, Post, Body } from '@nestjs/common';
+// checkout.controller.ts
+import { Body, Controller, Post } from '@nestjs/common';
 import { CheckoutService } from './checkout.service';
+import { QuoteResponse } from './types';
 
 @Controller('checkout')
 export class CheckoutController {
   constructor(private readonly checkoutService: CheckoutService) {}
 
   @Post()
-  async calculate(@Body() body: { items: { id: number; quantity: number }[] }) {
-    const total = await this.checkoutService.calculateTotal(body.items);
-    return { total };
+  checkout(
+    @Body() body: { items: { id: number; quantity: number }[] },
+  ): Promise<QuoteResponse> {
+    return this.checkoutService.calculateQuote(body.items);
   }
 }
