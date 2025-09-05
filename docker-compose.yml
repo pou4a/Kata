@@ -1,0 +1,94 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: kata_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d kata_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 5s
+
+  migrate:
+    build:
+      context: .
+      dockerfile: docker/backend.Dockerfile
+    image: kata-backend:dev
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@db:5432/kata_db
+    working_dir: /usr/src/app
+    command: >
+      sh -c "npx prisma migrate deploy"
+    volumes:
+      - ./back-end:/usr/src/app
+      - backend_node_modules:/usr/src/app/node_modules
+
+  backend:
+    build:
+      context: .
+      dockerfile: docker/backend.Dockerfile
+    image: kata-backend:dev
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@db:5432/kata_db
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./back-end:/usr/src/app
+      - backend_node_modules:/usr/src/app/node_modules
+    command: sh -c "npx prisma generate && npm run start:dev"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/frontend.Dockerfile
+    image: kata-frontend:dev
+    depends_on:
+      backend:
+        condition: service_started
+    environment:
+      REACT_APP_API_BASE_URL: http://localhost:3000
+      WDS_SOCKET_PORT: 3001
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./front-end:/usr/src/app
+      - frontend_node_modules:/usr/src/app/node_modules
+
+  #  Prisma Studio available with --profile dev
+  prisma-studio:
+    build:
+      context: .
+      dockerfile: docker/backend.Dockerfile
+    image: kata-backend:dev
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@db:5432/kata_db
+    command: npx prisma studio
+    ports:
+      - "5555:5555"
+    volumes:
+      - ./back-end:/usr/src/app
+      - backend_node_modules:/usr/src/app/node_modules
+    profiles: ["dev"]
+
+volumes:
+  postgres_data:
+  backend_node_modules:
+  frontend_node_modules:
