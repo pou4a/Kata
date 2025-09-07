@@ -1,4 +1,3 @@
-// checkout.controller.ts
 import { Body, Controller, Post } from '@nestjs/common';
 import { CheckoutService } from './checkout.service';
 import { QuoteResponse } from './types';
