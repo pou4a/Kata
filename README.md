@@ -48,6 +48,20 @@ This repository contains a full-stack application with a NestJS back-end and a R
     cd back-end
     npm install
     ```
+2. Apply Prisma schema
+
+# generate Prisma Client
+
+```bash
+npx prisma generate
+```
+
+# create/apply migrations (dev)
+
+```bash
+    npx prisma migrate dev --name init
+```
+
 2. Start the server:
     ```bash
     npm run start:dev
