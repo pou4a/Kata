@@ -78,6 +78,8 @@ docker compose up --build
 -   Uses Prisma ORM with migrations in `back-end/prisma/migrations`.
 -   Configure your database connection in `back-end/prisma/schema.prisma`.
 
+-   If running the backend outside Docker, change DATABASE_URL in your .env to use localhost:5432 instead of db:5432.
+
 ## Testing
 
 -   Back-end: `npm run test` (unit), `npm run test:e2e` (end-to-end)
